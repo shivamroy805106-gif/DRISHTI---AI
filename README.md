@@ -1,6 +1,8 @@
 # DRISHTI-AI
 ## Disaster Risk Intelligence & Safety Tracking Hub
 
+![DRISHTI-AI Command Center](docs/preview.jpg)
+
 > **"See the Risk. Predict the Threat. Save Lives."**
 
 A production-quality AI/ML-powered disaster intelligence and emergency response platform built for **Smart India Hackathon (SIH) 2024**.
@@ -100,42 +102,28 @@ If authentication is added in future:
 
 ## 🏗️ Architecture
 
-```
-┌─────────────────────────────────────────────────┐
-│              DRISHTI-AI Architecture             │
-├─────────────────┬───────────────────────────────┤
-│   Frontend      │   React + Vite + Tailwind CSS  │
-│   (Port 5173)   │   Leaflet Maps + Recharts       │
-│                 │   Framer Motion + Lucide Icons  │
-├─────────────────┼───────────────────────────────┤
-│   Backend       │   FastAPI + Python 3.x          │
-│   (Port 8000)   │   SQLAlchemy + SQLite           │
-│                 │   Pydantic v2 validation         │
-├─────────────────┼───────────────────────────────┤
-│   ML Layer      │   RandomForest Classifier       │
-│   (ml/)         │   GradientBoosting Regressor    │
-│                 │   Rule-based NLP + scikit-learn  │
-└─────────────────┴───────────────────────────────┘
+```mermaid
+graph TD
+    UI[Frontend: React + Vite + Tailwind]
+    API[Backend: FastAPI]
+    ML[ML Engine: Scikit-learn]
+    DB[(Database: SQLite)]
+    
+    UI <-->|JSON over REST API| API
+    API <-->|Pydantic schemas| DB
+    API -->|Features| ML
+    ML -->|Risk Score & XAI| API
 ```
 
 ### Data Flow
 
-```
-Citizen Reports / Sensor Data / News
-          ↓
-    AI/NLP Analysis
-          ↓
-  Hazard Classification
-          ↓
-  ML Risk Scoring (0-100)
-          ↓
-  Explainable AI (XAI)
-          ↓
-  Geographic Visualization
-          ↓
-  Priority Engine (P1/P2/P3)
-          ↓
-  Emergency Response Recommendation
+```mermaid
+graph LR
+    A[Citizen Report] --> B(NLP Analysis)
+    B --> C{ML Risk Scoring}
+    C -->|0-100 Score| D[Explainable AI]
+    D --> E[Priority Engine P1/P2/P3]
+    E --> F[Response Team Trigger]
 ```
 
 ---
