@@ -9,6 +9,15 @@ A production-quality AI/ML-powered disaster intelligence and emergency response 
 
 ---
 
+## 🌐 Live Demo & Deployment
+
+- **Frontend (Live Website):** [Insert Vercel Link Here]
+- **Backend API Docs:** [Insert Render Link Here]/api/docs
+
+*(Note: Replace the links above with your actual Vercel and Render links once deployed)*
+
+---
+
 ## 🚀 Quick Start (One Command)
 
 ```bash
