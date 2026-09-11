@@ -29,6 +29,7 @@ export const incidentsAPI = {
   getById: (id) => api.get(`/api/incidents/${id}`).then(r => r.data),
   create: (data) => api.post('/api/incidents', data).then(r => r.data),
   updateStatus: (id, status) => api.patch(`/api/incidents/${id}/status?status=${status}`).then(r => r.data),
+  delete: (id) => api.delete(`/api/incidents/${id}`).then(r => r.data),
 }
 
 // ── AI Analysis ────────────────────────────────────────────────────────────

@@ -174,13 +174,21 @@ def chat(payload: ChatRequest, db: Session = Depends(get_db)):
                 relevant_incidents=[i.incident_id for i in p1[:3]],
             )
 
-    if any(w in msg for w in ["nawada", "bihar", "bih-fld"]):
-        inc = next((i for i in incidents if "Bihar" in (i.state or "") or "nawada" in (i.location or "").lower()), None)
-        if inc:
-            return ChatResponse(
-                response=f"📍 **{inc.location}** — Risk Score: **{inc.risk_score}/100** ({inc.risk_category})\n\n{inc.ai_explanation}\n\nKey factors: Rainfall {inc.rainfall}%, River level {inc.river_level}%, Population density {inc.population_density}%.",
-                relevant_incidents=[inc.incident_id],
-            )
+    # Dynamic Location Search
+    found_inc = None
+    for inc in incidents:
+        loc = (inc.location or "").lower()
+        state = (inc.state or "").lower()
+        # Ensure location string is at least 3 chars to avoid false positive matches on short words
+        if (loc and len(loc) >= 3 and loc in msg) or (state and len(state) >= 3 and state in msg):
+            found_inc = inc
+            break
+
+    if found_inc:
+        return ChatResponse(
+            response=f"📍 **{found_inc.location}** — Risk Score: **{found_inc.risk_score}/100** ({found_inc.risk_category})\n\n{found_inc.ai_explanation}\n\nKey factors: Rainfall {found_inc.rainfall}%, River level {found_inc.river_level}%, Population density {found_inc.population_density}%.",
+            relevant_incidents=[found_inc.incident_id],
+        )
 
     if any(w in msg for w in ["risk", "people", "affected", "how many"]):
         return ChatResponse(
@@ -214,6 +222,39 @@ def chat(payload: ChatRequest, db: Session = Depends(get_db)):
             response=f"🚨 **Response Teams Status:**\n- Deployed: **{len(deployed)}** teams\n- Available: **{len(available)}** teams\n- Currently deployed to: {', '.join(t.assigned_incident or 'N/A' for t in deployed[:4])}",
             data={"deployed": len(deployed), "available": len(available)},
         )
+
+    if any(w in msg for w in ["cyclone", "storm", "hurricane"]):
+        cyclones = [i for i in incidents if i.disaster_type.lower() == "cyclone"]
+        if cyclones:
+            names = "\n".join(f"• {i.location} (Risk: {i.risk_score}/100)" for i in cyclones[:3])
+            return ChatResponse(
+                response=f"🌪️ **Active Cyclones ({len(cyclones)} total):**\n\n{names}\n\nTop cyclone has affected {cyclones[0].affected_population:,} people.",
+                relevant_incidents=[i.incident_id for i in cyclones[:3]],
+            )
+        else:
+            return ChatResponse(response="🌪️ There are no active cyclone incidents reported currently.")
+
+    if any(w in msg for w in ["fire", "wildfire"]):
+        fires = [i for i in incidents if i.disaster_type.lower() == "fire"]
+        if fires:
+            names = "\n".join(f"• {i.location} (Risk: {i.risk_score}/100)" for i in fires[:3])
+            return ChatResponse(
+                response=f"🔥 **Active Fires ({len(fires)} total):**\n\n{names}",
+                relevant_incidents=[i.incident_id for i in fires[:3]],
+            )
+        else:
+            return ChatResponse(response="🔥 There are no active fire incidents reported currently.")
+
+    if any(w in msg for w in ["flood", "flooding"]):
+        floods = [i for i in incidents if i.disaster_type.lower() == "flood"]
+        if floods:
+            names = "\n".join(f"• {i.location} (Risk: {i.risk_score}/100)" for i in floods[:3])
+            return ChatResponse(
+                response=f"🌊 **Active Floods ({len(floods)} total):**\n\n{names}",
+                relevant_incidents=[i.incident_id for i in floods[:3]],
+            )
+        else:
+            return ChatResponse(response="🌊 There are no active flood incidents reported currently.")
 
     if any(w in msg for w in ["critical", "worst", "most dangerous"]):
         if critical_incs:

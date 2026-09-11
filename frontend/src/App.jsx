@@ -11,6 +11,7 @@ import IncidentAnalysis from './pages/IncidentAnalysis'
 import Simulator from './pages/Simulator'
 import ResponseTeams from './pages/ResponseTeams'
 import AlertCenter from './pages/AlertCenter'
+import AdminDashboard from './pages/AdminDashboard'
 import { DemoContext } from './hooks/useDemoMode'
 
 export default function App() {
@@ -51,6 +52,7 @@ export default function App() {
                   <Route path="simulator" element={<Simulator />} />
                   <Route path="teams" element={<ResponseTeams />} />
                   <Route path="alerts" element={<AlertCenter />} />
+                  <Route path="admin" element={<AdminDashboard />} />
                 </Routes>
               </Layout>
             }

@@ -13,18 +13,44 @@ import { getRiskColor, formatTimeAgo, DISASTER_ICONS } from '../utils/helpers'
 import { useDemoMode } from '../hooks/useDemoMode'
 import toast from 'react-hot-toast'
 
-// Demo scenario steps
-const DEMO_STEPS = [
-  { id: 1, text: 'Heavy rainfall detected in Bihar — 92mm/hr', type: 'info' },
-  { id: 2, text: 'River Phalgu level rising: +6cm/hr above danger mark', type: 'warning' },
-  { id: 3, text: '47 citizen reports received — AI clustering in progress...', type: 'info' },
-  { id: 4, text: 'AI: 47 reports consolidated into 1 incident cluster (BIH-FLD-024)', type: 'success' },
-  { id: 5, text: 'ML model calculating risk score... Rainfall: +28, River: +24, Population: +17', type: 'info' },
-  { id: 6, text: 'RISK SCORE: 91/100 → CRITICAL — Nawada, Bihar marked CRITICAL on map', type: 'critical' },
-  { id: 7, text: 'XAI: "Heavy rainfall + rising river levels + high population density = Critical flood risk"', type: 'ai' },
-  { id: 8, text: 'Priority Engine: BIH-FLD-024 → P1 IMMEDIATE — NDRF deployment triggered', type: 'warning' },
-  { id: 9, text: 'Emergency Response Plan generated. NDRF-01 ETA: 45 minutes', type: 'success' },
-  { id: 10, text: 'What-If: +50% rainfall → Score 97/100 — Situation would become CATASTROPHIC', type: 'critical' },
+// Demo scenarios
+const DEMO_SCENARIOS = [
+  [
+    { id: 1, text: 'Heavy rainfall detected in Bihar — 92mm/hr', type: 'info' },
+    { id: 2, text: 'River Phalgu level rising: +6cm/hr above danger mark', type: 'warning' },
+    { id: 3, text: '47 citizen reports received — AI clustering in progress...', type: 'info' },
+    { id: 4, text: 'AI: 47 reports consolidated into 1 incident cluster (BIH-FLD-024)', type: 'success' },
+    { id: 5, text: 'ML model calculating risk score... Rainfall: +28, River: +24, Population: +17', type: 'info' },
+    { id: 6, text: 'RISK SCORE: 91/100 → CRITICAL — Nawada, Bihar marked CRITICAL on map', type: 'critical' },
+    { id: 7, text: 'XAI: "Heavy rainfall + rising river levels + high population density = Critical flood risk"', type: 'ai' },
+    { id: 8, text: 'Priority Engine: BIH-FLD-024 → P1 IMMEDIATE — NDRF deployment triggered', type: 'warning' },
+    { id: 9, text: 'Emergency Response Plan generated. NDRF-01 ETA: 45 minutes', type: 'success' },
+    { id: 10, text: 'What-If: +50% rainfall → Score 97/100 — Situation would become CATASTROPHIC', type: 'critical' },
+  ],
+  [
+    { id: 1, text: 'High wind speeds detected off Odisha Coast — 180km/hr', type: 'info' },
+    { id: 2, text: 'Cyclone tracking path updated: landfall near Puri expected in 6 hours', type: 'warning' },
+    { id: 3, text: 'Coastal sensor data analyzing storm surge levels...', type: 'info' },
+    { id: 4, text: 'AI: Storm surge prediction +3.5 meters above normal tide', type: 'warning' },
+    { id: 5, text: 'ML model calculating risk score... Wind: +40, Surge: +35, Population: +20', type: 'info' },
+    { id: 6, text: 'RISK SCORE: 95/100 → CRITICAL — Puri, Odisha marked CRITICAL on map', type: 'critical' },
+    { id: 7, text: 'XAI: "Extreme wind speeds + predicted storm surge = Catastrophic cyclone risk"', type: 'ai' },
+    { id: 8, text: 'Priority Engine: ODI-CYC-088 → P1 IMMEDIATE — Mass evacuation triggered', type: 'warning' },
+    { id: 9, text: 'Evacuation protocol initiated. SDRF Teams deployed. ETA: 30 mins', type: 'success' },
+    { id: 10, text: 'What-If: +20km/hr wind speed → Score 99/100 — Maximum alert level reached', type: 'critical' },
+  ],
+  [
+    { id: 1, text: 'Multiple explosion reports in Industrial Area, Jaipur', type: 'warning' },
+    { id: 2, text: '124 citizen reports received in last 5 minutes', type: 'info' },
+    { id: 3, text: 'AI: NLP extracting keywords: "chemical", "toxic smoke", "massive blast"', type: 'warning' },
+    { id: 4, text: 'AI: 124 reports consolidated into 1 incident cluster (RAJ-FIR-012)', type: 'success' },
+    { id: 5, text: 'ML model calculating risk score... Severity: +45, Population Density: +30', type: 'info' },
+    { id: 6, text: 'RISK SCORE: 88/100 → HIGH — Jaipur Industrial Area marked HIGH on map', type: 'critical' },
+    { id: 7, text: 'XAI: "Chemical fire in high-density industrial zone = High risk of toxic exposure"', type: 'ai' },
+    { id: 8, text: 'Priority Engine: RAJ-FIR-012 → P1 IMMEDIATE — Fire & Hazmat deployment', type: 'warning' },
+    { id: 9, text: 'Emergency Response Plan generated. HAZMAT-03 ETA: 15 minutes', type: 'success' },
+    { id: 10, text: 'What-If: Wind direction shifts towards residential area → Score 96/100 (CRITICAL)', type: 'critical' },
+  ]
 ]
 
 export default function Dashboard() {
@@ -64,10 +90,12 @@ export default function Dashboard() {
     setDemoStep(0)
     toast.success('🎬 Live Demo Started!', { duration: 2000 })
 
-    for (let i = 0; i < DEMO_STEPS.length; i++) {
+    const randomScenario = DEMO_SCENARIOS[Math.floor(Math.random() * DEMO_SCENARIOS.length)]
+
+    for (let i = 0; i < randomScenario.length; i++) {
       await new Promise(r => setTimeout(r, 1200))
       setDemoStep(i + 1)
-      setDemoLog(prev => [...prev, DEMO_STEPS[i]])
+      setDemoLog(prev => [...prev, randomScenario[i]])
     }
     await new Promise(r => setTimeout(r, 1000))
     setDemoRunning(false)

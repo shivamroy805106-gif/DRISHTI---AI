@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard, Map, BarChart3, AlertTriangle, Users,
   Radio, FlaskConical, Bell, FileText, Shield, Maximize,
-  Minimize, Activity, ChevronLeft, ChevronRight, Zap
+  Minimize, Activity, ChevronLeft, ChevronRight, Zap, Settings
 } from 'lucide-react'
 import { useState } from 'react'
 import { useDemoMode } from '../hooks/useDemoMode'
@@ -18,6 +18,7 @@ const NAV_ITEMS = [
   { to: '/app/report', icon: FileText, label: 'Report Emergency' },
   { to: '/app/teams', icon: Users, label: 'Response Teams' },
   { to: '/app/analytics', icon: BarChart3, label: 'Analytics' },
+  { to: '/app/admin', icon: Settings, label: 'Admin Panel' },
 ]
 
 export default function Layout({ children, presentationMode, setPresentationMode }) {

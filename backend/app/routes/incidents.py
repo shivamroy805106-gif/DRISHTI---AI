@@ -131,3 +131,12 @@ def update_incident_status(
     inc.updated_at = datetime.utcnow()
     db.commit()
     return {"message": f"Incident {incident_id} status updated to {status}"}
+
+@router.delete("/{incident_id}")
+def delete_incident(incident_id: str, db: Session = Depends(get_db)):
+    inc = db.query(Incident).filter(Incident.incident_id == incident_id).first()
+    if not inc:
+        raise HTTPException(status_code=404, detail="Incident not found")
+    db.delete(inc)
+    db.commit()
+    return {"message": f"Incident {incident_id} deleted"}

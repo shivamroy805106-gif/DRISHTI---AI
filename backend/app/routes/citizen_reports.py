@@ -86,8 +86,49 @@ async def submit_citizen_report(
         existing_incident = find_duplicate_cluster(db, disaster_type, latitude, longitude)
 
     if existing_incident:
-        # Increment report count
+        # Increment report count and affected population
         existing_incident.report_count += 1
+        existing_incident.affected_population += 500  # Assume each report indicates 500 more affected people
+
+        # Recalculate risk based on new population
+        from ml.predict import predict_risk, _generate_explanation
+        features = {
+            "rainfall": existing_incident.rainfall,
+            "river_level": existing_incident.river_level,
+            "population_density": existing_incident.population_density,
+            "affected_population": min(100, existing_incident.affected_population / 100),
+            "historical_disaster_freq": existing_incident.historical_disaster_freq,
+            "infrastructure_vulnerability": existing_incident.infrastructure_vulnerability,
+            "weather_severity": existing_incident.weather_severity,
+            "distance_to_hospital": existing_incident.distance_to_hospital,
+            "road_accessibility": existing_incident.road_accessibility,
+        }
+        new_risk = predict_risk(features)
+        
+        # Check if risk escalated
+        old_risk_score = existing_incident.risk_score
+        if new_risk["risk_score"] > old_risk_score:
+            existing_incident.risk_score = new_risk["risk_score"]
+            existing_incident.risk_category = new_risk["risk_category"]
+            existing_incident.severity = new_risk["risk_category"]
+            existing_incident.ai_explanation = _generate_explanation(existing_incident.disaster_type, new_risk, features, existing_incident.affected_population)
+            existing_incident.priority = "P1" if new_risk["risk_category"] == "CRITICAL" else "P2" if new_risk["risk_category"] == "HIGH" else "P3"
+            
+            # Create an escalation alert
+            from backend.app.models.models import Alert
+            alert = Alert(
+                alert_id=gen_report_id().replace("RPT", "ALT"),
+                incident_id=existing_incident.incident_id,
+                alert_type="RISK_ESCALATION",
+                severity=new_risk["risk_category"],
+                title=f"Risk Escalated due to Citizen Reports — {existing_incident.location}",
+                message=f"Incident risk increased due to surge in citizen reports. Now affecting ~{existing_incident.affected_population} people.",
+                previous_risk=old_risk_score,
+                current_risk=new_risk["risk_score"],
+                change_reason="Surge in citizen reports clustered to this incident."
+            )
+            db.add(alert)
+
         db.commit()
         incident_id = existing_incident.incident_id
         is_duplicate = True
