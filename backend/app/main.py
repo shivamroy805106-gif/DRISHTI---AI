@@ -11,9 +11,10 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -38,11 +39,18 @@ app = FastAPI(
 )
 
 # CORS
-origins = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000").split(",")
+cors_env = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000")
+if cors_env.strip() == "*":
+    allow_origins = ["*"]
+    allow_credentials = False
+else:
+    allow_origins = [o.strip() for o in cors_env.split(",") if o.strip()]
+    allow_credentials = True
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
+    allow_origins=allow_origins,
+    allow_credentials=allow_credentials,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -83,8 +91,13 @@ async def startup():
     logger.info("✅ DRISHTI-AI is ready!")
 
 
-@app.get("/")
-def root():
+@app.get("/health")
+def health():
+    return {"status": "healthy", "service": "DRISHTI-AI Backend"}
+
+
+@app.get("/api")
+def api_info():
     return {
         "name": "DRISHTI-AI",
         "version": "1.0.0",
@@ -94,6 +107,37 @@ def root():
     }
 
 
-@app.get("/health")
-def health():
-    return {"status": "healthy", "service": "DRISHTI-AI Backend"}
+frontend_dir = os.path.join(ROOT_DIR, "frontend", "dist")
+if os.path.isdir(frontend_dir):
+    assets_dir = os.path.join(frontend_dir, "assets")
+    if os.path.isdir(assets_dir):
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="frontend_assets")
+
+    @app.get("/")
+    async def serve_index():
+        return FileResponse(os.path.join(frontend_dir, "index.html"))
+
+    @app.get("/{full_path:path}")
+    async def serve_frontend(full_path: str):
+        if (
+            full_path.startswith("api")
+            or full_path.startswith("docs")
+            or full_path.startswith("redoc")
+            or full_path.startswith("openapi.json")
+        ):
+            raise HTTPException(status_code=404, detail="Not found")
+
+        file_path = os.path.join(frontend_dir, full_path)
+        if os.path.isfile(file_path):
+            return FileResponse(file_path)
+        return FileResponse(os.path.join(frontend_dir, "index.html"))
+else:
+    @app.get("/")
+    def root():
+        return {
+            "name": "DRISHTI-AI API",
+            "version": "1.0.0",
+            "tagline": "See the Risk. Predict the Threat. Save Lives.",
+            "docs": "/api/docs",
+            "status": "operational",
+        }

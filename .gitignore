@@ -41,5 +41,6 @@ backend/drishti.db
 *.swo
 
 # Project specific
+*.zip
 backend/uploads/
 dataset.csv
